@@ -83,11 +83,31 @@ class ReasonSegDataset(torch.utils.data.Dataset):
         for split in splits:
             images_split = glob.glob(
                 os.path.join(
-                    base_image_dir, "reason_seg", reason_seg_data, split, "*.jpg"
+                    base_image_dir, "reason_seg", reason_seg_data, split, "images", "*.jpg"
                 )
             )
+            if len(images_split) == 0:
+                images_split = glob.glob(
+                    os.path.join(
+                        base_image_dir, "reason_seg", reason_seg_data, split, "*.jpg"
+                    )
+                )
+            if len(images_split) == 0:
+                images_split = glob.glob(
+                    os.path.join(
+                        base_image_dir, "reason_seg", reason_seg_data, "*.jpg"
+                    )
+                )
             images.extend(images_split)
-        jsons = [path.replace(".jpg", ".json") for path in images]
+
+        jsons = []
+        for img_path in images:
+            qa_path = img_path.replace("train\\images", "QAs").replace("train/images", "QAs").replace("images", "QAs").replace(".jpg", ".json")
+            if os.path.exists(qa_path):
+                jsons.append(qa_path)
+            else:
+                jsons.append(img_path.replace(".jpg", ".json"))
+
         self.reason_seg_data = (images, jsons)
 
         print("number of reason_seg samples: ", len(images))

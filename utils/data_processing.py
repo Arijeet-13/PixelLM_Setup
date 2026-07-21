@@ -14,6 +14,20 @@ def get_mask_from_json(json_path, img):
         with open(json_path, "r", encoding="cp1252") as r:
             anno = json.loads(r.read())
 
+    if "questions" in anno and "shapes" not in anno:
+        comments = anno["questions"]
+        is_sentence = True
+        mask_path = json_path.replace("QAs", "labels").replace(".json", ".png")
+        if not os.path.exists(mask_path):
+            mask_path = json_path.replace(".json", ".png")
+        if os.path.exists(mask_path):
+            mask_img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+            mask = (mask_img > 0).astype(np.uint8)
+        else:
+            height, width = img.shape[:2]
+            mask = np.zeros((height, width), dtype=np.uint8)
+        return mask, comments, is_sentence
+
     inform = anno["shapes"]
     comments = anno["text"]
     is_sentence = anno["is_sentence"]

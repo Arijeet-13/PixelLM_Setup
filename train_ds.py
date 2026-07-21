@@ -200,8 +200,12 @@ def main(args):
         "separate_mm_projector": args.separate_mm_projector,
         "masks_process_with_clip": args.masks_process_with_clip,
         "image_feature_scale_num": args.image_feature_scale_num,
-
     }
+    if args.load_in_8bit:
+        model_args["load_in_8bit"] = True
+    elif args.load_in_4bit:
+        model_args["load_in_4bit"] = True
+
     torch_dtype = torch.float32
     if args.precision == "bf16":
         torch_dtype = torch.bfloat16
@@ -421,8 +425,8 @@ def main(args):
             "contiguous_gradients": True,
             "overlap_comm": True,
             "reduce_scatter": True,
-            "reduce_bucket_size": 5e8,
-            "allgather_bucket_size": 5e8,
+            "reduce_bucket_size": 2e8,
+            "allgather_bucket_size": 2e8,
         },
     }
     model_engine, optimizer, train_loader, scheduler = deepspeed.initialize(
