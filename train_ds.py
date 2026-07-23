@@ -600,9 +600,6 @@ def train(train_loader, model, epoch, optimizer, scheduler, writer, train_iter, 
                 input_dict["images_clip"] = input_dict["images_clip"].float()
 
             with torch.autocast(device_type=device.type, dtype=amp_dtype, enabled=use_amp and device.type == "cuda"):
-                with torch.no_grad(): #Fix For OOM error
-                    # Pre-compute SAM image embeddings without gradients
-                    pass  # SAM encoder is already frozen above
                 output_dict = model(**input_dict)
                 loss = output_dict["loss"]
 
