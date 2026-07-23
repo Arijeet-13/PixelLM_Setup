@@ -606,6 +606,9 @@ def train(train_loader, model, epoch, optimizer, scheduler, writer, train_iter, 
                 input_dict["images"] = input_dict["images"].float()
                 input_dict["images_clip"] = input_dict["images_clip"].float()
 
+            if device.type == "cuda": #Added due to error
+                torch.cuda.empty_cache()
+
             with torch.autocast(device_type=device.type, dtype=amp_dtype, enabled=use_amp and device.type == "cuda"):
                 output_dict = model(**input_dict)
                 loss = output_dict["loss"]
@@ -623,6 +626,8 @@ def train(train_loader, model, epoch, optimizer, scheduler, writer, train_iter, 
 
             # Scale down for grad accumulation, then backward.
             loss_to_backward = loss / args.grad_accumulation_steps
+            if device.type == "cuda": #Added due to error
+                torch.cuda.empty_cache()
             if scaler.is_enabled():
                 scaler.scale(loss_to_backward).backward()
             else:
