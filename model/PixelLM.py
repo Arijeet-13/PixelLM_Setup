@@ -241,27 +241,30 @@ class PixelLMForCausalLM(LlavaLlamaForCausalLM):
     ):
         # import pdb;pdb.set_trace()
         # 
-        #kwargs.update({ 
-        defaults = {
-            "image_feature_scale_num": 2, 
-            "pad_train_clip_images": True,
-            "resize_vision_tower": True,
-            "resize_vision_tower_size": 448,
-            "vision_tower_for_mask": True,
-            "separate_mm_projector": True,
-        } #})
-        for k, v in defaults.items(): #Added Due to errors
-            kwargs.setdefault(k, v)
+        #kwargs.update({ #Added due to oom error
+        for k, v in [
+            ("image_feature_scale_num", 2),
+            ("pad_train_clip_images", True),
+            ("resize_vision_tower", True),
+            ("resize_vision_tower_size", 448),
+            ("vision_tower_for_mask", True),
+            ("separate_mm_projector", True),
+        ]:
+            val = kwargs.get(k, getattr(config, k, v))
+            setattr(config, k, val)
+        #)}
+
         self.logger = kwargs.get("logger", None)
-        config.resize_vision_tower = kwargs.get("resize_vision_tower", False)
-        config.resize_vision_tower_size = kwargs.get("resize_vision_tower_size", 224)
-        config.pad_train_clip_images = kwargs.get("pad_train_clip_images", False)
-        config.vision_tower_for_mask = kwargs.get("vision_tower_for_mask", False)
-        config.separate_mm_projector = kwargs.get("separate_mm_projector", False)
+        # config.resize_vision_tower = kwargs.get("resize_vision_tower", False) #Removed due to oom errors
+        # config.resize_vision_tower_size = kwargs.get("resize_vision_tower_size", 224)
+        # config.pad_train_clip_images = kwargs.get("pad_train_clip_images", False)
+        # config.vision_tower_for_mask = kwargs.get("vision_tower_for_mask", False)
+        # config.separate_mm_projector = kwargs.get("separate_mm_projector", False)
         config.mm_projector_hidden_dim = 2
         config.mm_projector_out_dim = 1
-        self.image_feature_scale_num = kwargs.get("image_feature_scale_num", 1)
-        config.image_feature_scale_num = kwargs.get("image_feature_scale_num", 1)
+        # self.image_feature_scale_num = kwargs.get("image_feature_scale_num", 1)
+        # config.image_feature_scale_num = kwargs.get("image_feature_scale_num", 1)
+        self.image_feature_scale_num = config.image_feature_scale_num #Added due to oom error
         if not hasattr(config, "train_mask_decoder"):
             config.mm_use_im_start_end = kwargs.pop("use_mm_start_end", True)
             config.mm_vision_tower = kwargs.get(
