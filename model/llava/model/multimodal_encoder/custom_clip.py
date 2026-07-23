@@ -72,7 +72,13 @@ class _CLIPVisionTransformer(CLIPVisionTransformer):
         if pixel_values is None:
             raise ValueError("You have to specify pixel_values")
 
-        hidden_states = self.embeddings(pixel_values)
+        #hidden_states = self.embeddings(pixel_values) #Removed due to errors
+        patch_embeds = self.embeddings.patch_embedding(pixel_values) #Added due to errors
+        patch_embeds = patch_embeds.flatten(2).transpose(1, 2) #Added due to errors
+        class_embeds = self.embeddings.class_embedding.expand(pixel_values.shape[0], 1, -1) #Added due to errors
+        embeddings = torch.cat([class_embeds, patch_embeds], dim=1) #Added due to errors
+        position_ids = self.embeddings.position_ids[:, :embeddings.shape[1]] #Added due to errors
+        hidden_states = embeddings + self.embeddings.position_embedding(position_ids) #Added due to errors
         hidden_states = self.pre_layrnorm(hidden_states)
 
         if attention_mask is not None:
