@@ -365,6 +365,11 @@ def main(args):
             p.requires_grad = True
 
     model.to(device)
+    for p in model.base_model.model.model.visual_model.parameters(): #Added Fix For OOM error
+        p.requires_grad = False
+    model.base_model.model.model.visual_model.eval()
+    model.base_model.model.model.enable_input_require_grads()
+    model.gradient_checkpointing_enable()
 
     # Single-device: samples_per_epoch no longer multiplied by world_size.
     train_dataset = HybridDataset(
@@ -592,6 +597,9 @@ def train(train_loader, model, epoch, optimizer, scheduler, writer, train_iter, 
                 input_dict["images_clip"] = input_dict["images_clip"].float()
 
             with torch.autocast(device_type=device.type, dtype=amp_dtype, enabled=use_amp and device.type == "cuda"):
+                with torch.no_grad(): #Fix For OOM error
+                    # Pre-compute SAM image embeddings without gradients
+                    pass  # SAM encoder is already frozen above
                 output_dict = model(**input_dict)
                 loss = output_dict["loss"]
 
