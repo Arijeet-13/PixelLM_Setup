@@ -60,6 +60,11 @@ class LlavaMetaModel:
             self.vision_tower = [vision_tower]
         else:
             self.vision_tower = vision_tower
+        if hasattr(self, "model"): #Added due to oom issues
+            if fsdp is not None and len(fsdp) > 0:
+                self.model.vision_tower = [vision_tower]
+            else:
+                self.model.vision_tower = vision_tower
 
         self.config.use_mm_proj = True
         self.config.mm_hidden_size = vision_tower.hidden_size
