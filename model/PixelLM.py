@@ -241,14 +241,17 @@ class PixelLMForCausalLM(LlavaLlamaForCausalLM):
     ):
         # import pdb;pdb.set_trace()
         # 
-        kwargs.update({
+        #kwargs.update({ 
+        defaults = {
             "image_feature_scale_num": 2, 
             "pad_train_clip_images": True,
             "resize_vision_tower": True,
             "resize_vision_tower_size": 448,
             "vision_tower_for_mask": True,
             "separate_mm_projector": True,
-        })
+        } #})
+        for k, v in defaults.items(): #Added Due to errors
+            kwargs.setdefault(k, v)
         self.logger = kwargs.get("logger", None)
         config.resize_vision_tower = kwargs.get("resize_vision_tower", False)
         config.resize_vision_tower_size = kwargs.get("resize_vision_tower_size", 224)
