@@ -133,11 +133,15 @@ class MaskDecoder(nn.Module):
 
         # image_embeddings: [1, C, H, W], tokens: [B, N, C]
         # dense_prompt_embeddings: [B, C, H, W]
-        # Expand per-image data in batch direction to be per-mask
         src = torch.repeat_interleave(image_embeddings, tokens.shape[0], dim=0)
+        b, c, h, w = src.shape #Added due to errors
+        if dense_prompt_embeddings.shape[-2:] != (h, w): #Added due to errors
+            dense_prompt_embeddings = F.interpolate(dense_prompt_embeddings.float(), size=(h, w), mode="bilinear", align_corners=False).to(dense_prompt_embeddings)
+        if image_pe.shape[-2:] != (h, w): #Added due to errors
+            image_pe = F.interpolate(image_pe.float(), size=(h, w), mode="bilinear", align_corners=False).to(image_pe)
         src = src + dense_prompt_embeddings
         pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
-        b, c, h, w = src.shape
+        #b, c, h, w = src.shape Remove due to errors
 
         # Run the transformer
         hs, src = self.transformer(src, pos_src, tokens)
