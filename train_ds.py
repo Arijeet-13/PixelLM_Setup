@@ -293,6 +293,7 @@ def main(args):
 
     model.get_model().initialize_vision_modules(model.get_model().config)
     vision_tower = model.get_model().get_vision_tower()
+    model.vision_tower = vision_tower  #Added due to oom error
     vision_tower.to(dtype=torch_dtype, device=device)
     model.get_model().initialize_pixellm_modules(model.get_model().config)
 
