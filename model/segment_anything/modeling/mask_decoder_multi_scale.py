@@ -169,8 +169,11 @@ class MaskDecoderMultiScale(nn.Module):
             src = (torch.repeat_interleave(previous_masks[:, None], 256, dim=1).sigmoid() + 1) * src
             image_pe=self.pe1((h, w)).unsqueeze(0)
             dense_prompt_embeddings = F.interpolate(dense_prompt_embeddings.float(), size=(h, w), mode="bilinear", align_corners=False).to(dense_prompt_embeddings)
-        
-        src = src + dense_prompt_embeddings #B, C, 32, 32
+        #src = src + dense_prompt_embeddings #B, C, 32, 32 Removed due to errors
+        b, c, h, w = src.shape #Added due to errors
+        if dense_prompt_embeddings.shape[-2:] != (h, w):
+            dense_prompt_embeddings = F.interpolate(dense_prompt_embeddings.float(), size=(h, w), mode="bilinear", align_corners=False).to(dense_prompt_embeddings)
+        src = src + dense_prompt_embeddings
         pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
         b, c, h, w = src.shape
 

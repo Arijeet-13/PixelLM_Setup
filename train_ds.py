@@ -291,10 +291,14 @@ def main(args):
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable()
 
+    model.config.resize_vision_tower_size = args.resize_vision_tower_size #Added due to errors
+    if hasattr(model.get_model(), "config"): #Added due to errors
+        model.get_model().config.resize_vision_tower_size = args.resize_vision_tower_size
+
     model.get_model().initialize_vision_modules(model.get_model().config)
     vision_tower = model.get_model().get_vision_tower()
-    model.vision_tower = vision_tower #Added due to OOM errors
-    if hasattr(model.get_model(), "model"): #Added due to OOM errors
+    model.vision_tower = vision_tower #Added due to oom errors
+    if hasattr(model.get_model(), "model"):
         model.get_model().model.vision_tower = vision_tower
     vision_tower.to(dtype=torch_dtype, device=device)
     model.get_model().initialize_pixellm_modules(model.get_model().config)
