@@ -365,11 +365,14 @@ def main(args):
             p.requires_grad = True
 
     model.to(device)
-    for p in model.base_model.model.model.visual_model.parameters(): #Added Fix For OOM error
-        p.requires_grad = False
-    model.base_model.model.model.visual_model.eval()
-    model.base_model.model.model.enable_input_require_grads()
-    model.gradient_checkpointing_enable()
+    # Enable gradient checkpointing to save VRAM #Fix for OOM errors
+    if hasattr(model, "enable_input_require_grads"):
+        model.enable_input_require_grads()
+    elif hasattr(model, "base_model"):
+        if hasattr(model.base_model, "enable_input_require_grads"):
+            model.base_model.enable_input_require_grads()
+    if hasattr(model, "gradient_checkpointing_enable"):
+        model.gradient_checkpointing_enable()
 
     # Single-device: samples_per_epoch no longer multiplied by world_size.
     train_dataset = HybridDataset(
