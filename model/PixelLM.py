@@ -310,6 +310,9 @@ class PixelLMForCausalLM(LlavaLlamaForCausalLM):
                 if any([x in n for x in ["mm_projector"]]):
                     p.requires_grad = True
                     
+    def initialize_pixellm_modules(self, config): #Added due to errors
+        self.model.initialize_pixellm_modules(config)
+
     def get_visual_embs(self, pixel_values: torch.FloatTensor):
         with torch.no_grad():
             image_embeddings_list = []
